@@ -1,0 +1,31 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: Update package manager cache
+      apt:
+        update_cache: true
+
+    - name: Install Nikto
+      apt:
+        name: nikto
+        state: present
+
+    - name: Install sqlmap
+      apt:
+        name: sqlmap
+        state: present
+
+    - name: Install dirbuster
+      apt:
+        name: dirbuster
+        state: present
+
+    - name: Install nmap
+      apt:
+        name: nmap
+        state: present
+
+    - name: Install xsser
+      apt:
+        name: xsser
+        state: present
