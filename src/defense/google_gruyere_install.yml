@@ -1,0 +1,53 @@
+---
+- name: Install and launch Google Gruyere
+  hosts: all
+  become: yes
+  tasks:
+  - name: Install Python
+    apt:
+      name: python
+      update_cache: yes
+
+  - name: Configure hostname properly
+    ansible.builtin.hostname:
+      name: "10.0.0.64"
+    become: true
+
+  - name: Modify /etc/hosts for gruyere to work properly
+    lineinfile:
+      path: /etc/hosts
+      regexp: '127.0.0.1(.*)'
+      line: '127.0.1.1       10.0.0.64.cloud 10.0.0.64'
+      backrefs: yes
+
+  - name: Create a directory for gruyere
+    become: yes
+    file:
+      path: /opt/gruyere
+      state: directory
+      mode: 0755
+      owner: root
+      group: root
+
+  - name: Downloading and extraction gruyere
+    ansible.builtin.unarchive:
+      src: https://google-gruyere.appspot.com/gruyere-code.zip
+      dest: /opt/gruyere
+      remote_src: yes
+
+  - name: Changing gruyere to insecure mode to access it with others hosts
+    lineinfile:
+      path: /opt/gruyere/gruyere.py
+      regexp: '(.*)insecure_mode =(.*)'
+      line: '  insecure_mode = True'
+      backrefs: yes
+
+  - name: Adding the attacker ip to allowed ips in gruyere
+    lineinfile:
+      path: /opt/gruyere/gruyere.py
+      regexp: '(.*)allowed_ips = (.*)'
+      line: "    allowed_ips = ['127.0.0.1','10.0.0.252']"
+
+  - name: Launching Google Gruyere
+    become: yes
+    shell: "python /opt/gruyere/gruyere.py"

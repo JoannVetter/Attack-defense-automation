@@ -54,12 +54,12 @@
           - re
         state: present
 
-    - name: Copy Python script
-      copy:
-        src: "attack_handler.py"
-        dest: "/var/www/html/attack_handler.py"
+#    - name: Copy Python script
+#      copy:
+#        src: "attack_handler.py"
+#        dest: "/var/www/html/attack_handler.py"
 
-    - name: Run Python script
-      command: "python /var/www/html/attack_handler.py"
-      async: 7200
-      poll: 0
+#    - name: Run Python script
+#      command: "python /var/www/html/attack_handler.py"
+#      async: 7200
+#      poll: 0

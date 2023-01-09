@@ -1,6 +1,23 @@
 - hosts: all
   become: true
   tasks:
+
+    - name: Add Kali source package.
+      lineinfile:
+        path: /etc/apt/sources.list
+        line: deb http://http.kali.org/kali kali-rolling main contrib non-free
+    
+    - name: Getting the keys for Kali repo
+      get_url:
+        url: http://old.kali.org/kali/pool/main/k/kali-archive-keyring/kali-archive-keyring_2022.1_all.deb
+        dest: /tmp/kali-archive-keyring_2022.1_all.deb
+    
+    - name: Installing the keys
+      ansible.builtin.command: dpkg -i /tmp/kali-archive-keyring_2022.1_all.deb
+
+    #- name: Add Kali apt repository key.
+    #  ansible.builtin.command: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys F6BC817356A3D45E
+
     - name: Update package manager cache
       apt:
         update_cache: true
@@ -29,3 +46,7 @@
       apt:
         name: xsser
         state: present
+
+    - copy:
+        src: /home/kali/Attack-defense-automation/src/attack
+        dest: /usr/local
