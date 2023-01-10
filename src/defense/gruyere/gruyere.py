@@ -799,13 +799,10 @@ class GruyereRequestHandler(BaseHTTPRequestHandler):
 
     if (server_unique_id not in path                         # DO NOT CHANGE
         and path != '/favicon.ico'):                         # DO NOT CHANGE
-      if path == '' or path == '/':                          # DO NOT CHANGE
-        self._SendRedirect('/', server_unique_id)            # DO NOT CHANGE
-        return                                               # DO NOT CHANGE
-      else:                                                  # DO NOT CHANGE
-        print >>sys.stderr, (                                # DO NOT CHANGE
-            'DANGER! Request without unique id: ' + path)    # DO NOT CHANGE
-        _Exit('bad_id')                                      # DO NOT CHANGE
+                                # DO NOT CHANGE
+      self._SendRedirect('/', server_unique_id+path)         # DO NOT CHANGE
+      return                                                 # DO NOT CHANGE
+                                                             # DO NOT CHANGE
 
     path = path.replace('/' + server_unique_id, '', 1)       # DO NOT CHANGE
 

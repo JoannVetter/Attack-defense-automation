@@ -1,0 +1,96 @@
+---
+- name: Install and launch DVWA
+  hosts: all
+  become: true
+  tasks:
+  - name: Updating cache
+    ansible.builtin.apt:
+      update_cache: true
+
+  - name: Install required packages for dvwa
+    ansible.builtin.apt:
+      name: 
+        - apache2
+        - default-mysql-server
+        - php
+        - php-mysql
+        - php-gd
+        - git
+        - python3-mysqldb
+
+      state: present
+      update_cache: true
+
+  # - name: Delete info of apache2
+  #   file:
+  #     status: absent
+  #     path: /var/www/html/info.html
+
+  - name: Define security level regex variable
+    set_fact:
+      security_level_regex: "^\\$_DVWA\\s*\\[\\s*'default_security_level'\\s*\\]\\s*=\\s*'impossible';"
+
+  - name: Clone DVWA
+    git:
+      repo: https://github.com/ethicalhack3r/DVWA.git
+      dest: /var/www/html/DVWA
+      clone: yes
+      force: true
+      update: yes
+
+  - name: Give good permissions to DVWA
+    file:
+      path: /var/www/html/DVWA
+      state: directory
+      owner: root
+      group: root
+      mode: '0777'
+
+  - name: creating dvwa db
+    mysql_db:
+      name: "dvwa"
+      state: present
+
+  - name: creating mysql user
+    mysql_user:
+      name: "dvwa"
+      password: "p@ssw0rd"
+      priv:
+        'dvwa.*': 'ALL'
+      host: '%'
+      state: present
+
+  - name: Setting the difficulty of DVWA to low
+    lineinfile:
+      path: /var/www/html/DVWA/config/config.inc.php.dist
+      regexp: "{{security_level_regex}}"
+      line: "$_DVWA[ 'default_security_level' ] = 'low';"
+      backrefs: yes
+
+  - name: Copying config file to rename
+    copy:
+      remote_src: true
+      src: /var/www/html/DVWA/config/config.inc.php.dist
+      dest: /var/www/html/DVWA/config/config.inc.php
+
+  - name: Modifying PHP ini
+    lineinfile:
+      path: /etc/php/7.4/apache2/php.ini
+      regexp: "allow_url_include = Off"
+      line: "allow_url_include = On"
+      backrefs: yes
+
+  - name: Putting good permissions for file upload
+    file:
+      path: /var/www/html/DVWA/hackable/uploads/
+      mode: 0777
+
+  - name: Restart apache2
+    ansible.builtin.service:
+      name: apache2
+      state: restarted
+
+  - name: restart mysql
+    service: name=mysql
+             enabled=yes
+             state=restarted

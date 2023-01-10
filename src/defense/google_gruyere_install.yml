@@ -32,7 +32,7 @@
   - name: Copying our version of gruyere
     copy:
       src: gruyere
-      dest: /opt/gruyere
+      dest: /opt
       directory_mode:
     tags: 
       - parentdir

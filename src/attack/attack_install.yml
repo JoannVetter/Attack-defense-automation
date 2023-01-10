@@ -27,7 +27,7 @@
     - name: Install sqlmap
       apt:
         name: sqlmap
-        state: present
+        state: latest
 
     - name: Install dirbuster
       apt:
