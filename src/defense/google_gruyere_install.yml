@@ -20,20 +20,22 @@
       line: '127.0.1.1       10.0.0.64.cloud 10.0.0.64'
       backrefs: yes
 
-  - name: Create a directory for gruyere
-    become: yes
-    file:
-      path: /opt/gruyere
-      state: directory
-      mode: 0755
-      owner: root
-      group: root
+  # - name: Create a directory for gruyere
+  #   become: yes
+  #   file:
+  #     path: /opt/gruyere
+  #     state: directory
+  #     mode: 0755
+  #     owner: root
+  #     group: root
 
-  - name: Downloading and extraction gruyere
-    ansible.builtin.unarchive:
-      src: https://google-gruyere.appspot.com/gruyere-code.zip
+  - name: Copying our version of gruyere
+    copy:
+      src: gruyere
       dest: /opt/gruyere
-      remote_src: yes
+      directory_mode:
+    tags: 
+      - parentdir
 
   - name: Changing gruyere to insecure mode to access it with others hosts
     lineinfile:

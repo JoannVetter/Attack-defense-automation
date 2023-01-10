@@ -15,12 +15,13 @@
     - name: Installing the keys
       ansible.builtin.command: dpkg -i /tmp/kali-archive-keyring_2022.1_all.deb
 
-    #- name: Add Kali apt repository key.
-    #  ansible.builtin.command: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys F6BC817356A3D45E
-
     - name: Update package manager cache
       apt:
         update_cache: true
+
+    - name: Install nmap on Python with pip
+      ansible.builtin.pip:
+        name: python-nmap
 
     - name: Install Nikto
       apt:
@@ -48,5 +49,7 @@
         state: present
 
     - copy:
-        src: /home/kali/Attack-defense-automation/src/attack
+        src: /home/kali/Attack-defense-automation/src/attack/attack.py
         dest: /usr/local
+      
+    - command: python3 /usr/local/attack.py
