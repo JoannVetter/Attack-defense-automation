@@ -16,7 +16,7 @@ tcp_ports = [port for port in scan_results['scan'][target_url]['tcp'].keys() if 
 
 for port in tcp_ports:
 
-    taget_url="http://10.0.0.64"
+    target_url="http://10.0.0.64"
     target_url+=str(port)+'/'
 
     # Use sqlmap to detect SQL injections and display available databases

@@ -19,10 +19,6 @@
       apt:
         update_cache: true
 
-    - name: Install nmap on Python with pip
-      ansible.builtin.pip:
-        name: python-nmap
-
     - name: Install Nikto
       apt:
         name: nikto
@@ -48,8 +44,40 @@
         name: xsser
         state: present
 
-    - copy:
+    - name: Create a directory for the attack script
+      file:
+        path: /opt/attack
+        state: directory
+        mode: 0755
+        owner: root
+        group: root
+
+    - name: Create a directory with venv
+      file:
+        path: /opt/attack/venv
+        state: directory
+        mode: 0755
+        owner: root
+        group: root
+
+    - name: Copying the attack script to the remote host
+      copy:
         src: /home/kali/Attack-defense-automation/src/attack/attack.py
-        dest: /usr/local
-      
-    - command: python3 /usr/local/attack.py
+        dest: /opt/attack
+
+    - name: Installing venv
+      pip:
+        name: virtualenv
+
+    - name: Copying the requirements
+      copy:
+        src: /home/kali/Attack-defense-automation/src/attack/requirements.txt
+        dest: /opt/attack/requirements.txt
+
+    - name: Setting up the venv
+      pip:
+        requirements: /opt/attack/requirements.txt
+        virtualenv: /opt/attack/venv
+        virtualenv_python: python3
+        
+    - command: python3 /opt/attack/attack.py > output
