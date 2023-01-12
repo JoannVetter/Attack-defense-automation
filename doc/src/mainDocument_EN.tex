@@ -1,0 +1,255 @@
+% Kompiuterijos katedros ir kibernetinio saugumo laboratorijos šablonas
+% Template of Department of Computer Science II or cybersecurity laboratory
+% Versija 1.3 2021 m. birželis [ March, 2015]
+
+\documentclass[a4paper,12pt,fleqn]{article}
+\input{allPacks}
+
+\newtoggle{inLithuanian}
+ %If the report is in Lithuanian, it is set to true; otherwise, change to false
+\settoggle{inLithuanian}{false}
+
+%create file preface.tex for the preface text
+%if preface is needed set to true
+\newtoggle{needPreface}
+\settoggle{needPreface}{false}
+
+\newtoggle{signaturesOnTitlePage}
+\settoggle{signaturesOnTitlePage}{false}
+
+\input{macros}
+
+\hypersetup{
+colorlinks=true
+}
+
+\begin{document}
+ % #1 -report type, #2 - title, #3-7 students, #8 - supervisor
+ \depttitlepage{Semester Project}{Research and implementation of cyber attacks\\{\small
+ Automating attack and defense in a virtual lab}}{Joann Vetter} 
+ {}{}{}{}% students 2-5
+{Mr. Eduardas Kutka}
+
+\tableofcontents
+
+%keywords and notations if needed
+\sectionWithoutNumber{Abstract}
+
+{\input{abstractEN}}%tex-file of abstract in other language
+
+ %Introduction section: label is sec:intro
+\sectionWithoutNumber{\keyWordIntroduction}{intro}
+\input{introduction.tex}
+
+
+
+ %the main part
+\newpage
+\section{Motivation and analysis of the related work}
+\label{sec:motivation}
+\subsection{Motivation}
+\label{sec:example}
+
+Conducting a penetration testing can be long and exhausting, it can last days on big structure and therefore be expensive and resourceful too. Automation has been a concern for some times because it would allow humans to perform such tests faster and also to let the machine take care of the basic vulnerabilities to focus on the more difficult exploits. \\
+
+Also, for research and academic purpose, it can be useful to have a quick setup of a penetration testing laboratory and a script to attack it to observe what can happen and how it works. Even though the script is designed to be the less verbose possible, a slight modification of the code could be done to have more outputs in order to understand what is happening. \\
+
+Since the tools already exists for most of them, this project will mostly be about putting them together and making it work. \\
+
+As for motivation for the penetration testing itself, some figures are quite alarming. Indeed, according to this paper\cite{motivation} the average total cost of data breaches in 2015 where of 3.79 million\$ per company and the time to detect the problem is also increasing every year. Therefore, companies have really great interests investing in penetration testing and regular audits to prevent such breach and hacking in general. Also, the faster the breach is identified and corrected, the less risk there is for attackers to exploit the same problem over and over.
+
+\subsection{Research and analysis of related work}
+\label{sec:data}
+
+In the first part of the work, it was important to know which things already existed to get insights of what already have been done, in which way the state of the art was currently doing and how to bring something different up with a beginner or intermediate level in cybersecurity and in IT in general. \\ The first thing was to identify what was really automated penetration testing, which differences it had with manual penetration testing and which tools where currently in use to perform such testings. Also, to go into that field it was important to understand what was a penetration testing on the first hand and how it is conducted. \\
+There are five steps that are identified\cite{overview}, planning, discovery, attack and reporting. Although all of these steps are important in a real scenario, the project was mostly about the three last parts. Indeed, since the victim machine is known before hand, the planning does not make much sense in this specific study. Anyway, the discovery, attack and reporting where definitely important and interesting. Discovery was mostly about finding where to hit the target, while attack is more of exploiting breaches, and reporting is much more on the defense side with the detection and prevention script. It is to be underlined that the paper cited previously has a take on automated penetration testing but both automated testing and manual testing are required to go in depth during the audit and to make sure to cover as many breaches as possible.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.6]{images/Automation_pentesting.png}
+    \caption{\href{https://blog.detectify.com/wp-content/uploads/2017/08/Automation_pentesting.png}{Source. }Main differences between automated and manual audit}
+\end{figure}
+
+Also, it was required to know which attacks are the most common and the most lethal for companies and websites in general. The scope of the project was to cover the main vulnerabilities, even though it is aimed to be extended in the future to cover as many vulnerabilities as possible. \\It was mandatory to limit the number of tools and breaches covered in order to keep a portable code and also to limit the time of execution (since automated tools are "blind", it is sometime really long to execute the whole script). The main things that was identified among regular web vulnerabilities where XSS (Cross site scripting, injecting of Javascript code in certain input fields) SQL injections (requesting a database in a way that was not intended by the developer) and info leaks as backup files or else\cite{vuln}. These are the breaches that the tool will try to detect and exploit if possible. Other vulnerabilities that can be think of are irregular file uploads, local file inclusion or remote file inclusion, Cross Site Request Forgery but also command injection for example (this list is not exhaustive at all).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.23]{images/Infographic - OWASP Top 10 2021.png}
+    \caption{\href{https://prismic-io.s3.amazonaws.com/horangiweb/22887c0e-2492-421f-8bbf-bdcb7fac4b5f_Infographic+-+OWASP+Top+10+2021.png}{Source. }OWASP Top 10 of most common breaches}
+\end{figure}
+
+The type of penetration testing is also important to choose\cite{type}. Indeed, a white box testing (which is an audit with the code available) is really different from a black box testing (when an outsider tries to hack). The most simple automated type of test to conduct is black box testing, because otherwise one have to go into code analysis and it can become out of hand and specific really fast. Knowing this, black box testing was chosen as it is the main one performed by usual tools and that it is a common scenario during web hacking (but maybe not the main one since insiders attacks are really more frequent than one can think). Also, it is important to underline that even though it is a big part of hacking and it is important to test it, social engineering is not covered by this paper. This could however be automated by spam bots and false emails for example, but this field is more about human skills than technical skills so this paper will not deal with it.
+\\
+
+\subsection{Finding a vulnerable app}
+
+The first requirement to be able to test things on a virtual lab is to find a vulnerable web application to attack. There are many web applications already made that are available. This part has been a struggle because the writing of the Ansible scripts required no interaction and no input from the user at all. \\
+The first web application that was chosen was \href{https://www.giac.org/paper/gwapt/3387/introduction-owasp-mutillidae-ii-web-pen-test-training-environment/126917}{mutillidae} because it is covering many vulnerabilities and it is suppose to be easy to deal with. However, the setup of the database was complicated and too many errors showed up, which were complicated to fix in a reasonable time. \\
+Accordingly, another app had to be chosen. Google Gruyere seemed to be an interesting choice. The setup is easy and was realized using Ansible (the code is still available in the along CD). The problem with Google Gruyere was that it is really made for manual penetration testing and it was really complicated to get a decent automated testing on this app. Also, the documentation about this web application was not that exhaustive, so the project could not use this application either. \\ 
+This paper\cite{webapps} is dealing with the subject of educational vulnerable websites deeply, and \href{https://www.giac.org/paper/gwapt/3387/introduction-owasp-mutillidae-ii-web-pen-test-training-environment/126917}{DVWA} (Damn Vulnerable Web Application) appeared to be the most easy and suitable option after reading this. Indeed, the setup is doable and building an Ansible script was possible. The app needed few modifications to be suitable for automatic penetration testing. Indeed, the login page was removed in order to get rid of the session id parameter which required human interaction. \\
+This website has three levels of security, low, medium and high. The low level was chosen to be able to test as many things as possible. The available breaches are multiple and the XSS and SQL injection are part of them so the tool will be tested.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.45]{images/DVWA.png}
+    \caption{\href{https://1.bp.blogspot.com/-UfcDBmOv8yk/WnI1MIxfopI/AAAAAAAAKHU/CDyhAkrVnbQWXWPh0BDr1bxmX8tA_fX0ACLcBGAs/s1600/DVWA.png}{Source. }The welcome page of DVWA}
+\end{figure}
+
+\subsection{The detection part}
+
+The project also had to include a detection/report part in order to block or prevent such attacks. This paper\cite{detection}, even if old, give an overview of what means are possible to take in order to detect attempted hacking. However, this is mainly theoretical and now that new tools are available, there are multiple things to do. The first thing that comes to mind could be using \href{https://www.fail2ban.org/wiki/index.php/Main_Page}{fail2ban} or such software in order to block malicious IPs and that is the most logical thing to do. However, in the idea of trying to develop a script that would be deployed along the script that runs the server, a minimal python script was developed. The purpose of this script would be both to block weird or malicious looking requests, but also prevent a single machine to run a lot of queries in a short period of time to block bots and automated tools. In order to do this, there is a ban list that will not allow certain IPs to  
+
+\section{Creation of the lab}
+
+\subsection{Creation of the victim machine}
+
+First of all, a victim machine is required in order to attack it and open it. There was many machine that could have been used to do this, has seen previously. It could have been possible too to develop a vulnerable machine but it would have take to long to do an exhaustive machine. Therefore, the victim machine had to be a server for an already existing vulnerable application.
+
+\subsubsection{Mutillidae}
+ 
+ The first option taken was Mutillidae, a web application developed by OWASP in order to help people train about hacking. However this web application did not work properly with the Ansible scripts and it was really complicated to debug things and to interact with the website (at this point the SSH tunnel was not working either so the comprehension of what was happening was minimal). Also, this web application relied on XAMPP, which had a lot of problem of compatibility when trying to install with Ansible and the whole installation was painful as time was running by. Mutillidae was abandoned, seeking for something more easy and flexible.
+
+ \subsubsection{Google Gruyere}
+
+Google Gruyere is a web application also developed for educational purposes, trying to show usual vulnerabilities to help people understand them and also allow to fix some of those. The installation is quite simple as it is relying on Python HTTP server module. The Ansible script is still available and is functional to install Google Gruyere. However, once installed and ready, during the testing of the attack scripts, it was clear that this option was not suitable at all because it has been made for manual penetration testing, most vulnerabilities are common ones but not properly exploitable by a machine without being specific. At this point, the web application was not interesting anymore for the purpose of this project so it was abandoned.
+
+\subsubsection{DVWA}
+
+Finally, DVWA (Damn Vulnerable Web Application) was the easiest and most complete option. Indeed, this web application developed for educational purposes too work with PHP and MySQL. After a few tutorial about the installation and some correction, the application is ready to be used. The login page had to be dropped, which was done by a simple modification in a configuration file, and then it was possible to query the application successfully with cURL first, and then with a python script. The whole process was mostly about taking care of Ansible fragile syntax and to correct some deprecated version of software. Dealing with regular expressions to modify files was also difficult sometimes.
+\\
+Also, since the machine has been created to get hacked, it is not a problem that it is on the university network because nothing sensitive is in there. However, one must be careful when installing such application on his computer because it can be an entrance point for an attacker, so one should never post DVWA online.
+
+\subsection{Creation of the attacker machine}
+
+\subsubsection{The tools}
+
+When the defense machine was ready, it was time to create the attacker machine. In order to do so, the first thing was to research the main tools used to do automated penetration testing. Since the targeted vulnerabilities where directory listing, SQL injection and XSS injection, it was easy to find such tools. Indeed, sqlmap is the reference\cite{sqli} in terms of automated tools for SQL injection, for the directory listing, dirb\cite{dirb} seemed to be the easiest option (dirbuster was tried before but it is the graphic version of the tool and cannot be used through the automation process because it requires input) even though the wordlist method is brutal and does not cover every folder or file. For XSS injections, a nice tool has been developed in Python called \href{https://github.com/pwn0sec/PwnXSS}{PwnXSS} that do everything that is required in the project. Also we needed to have a list of the URL to attack because some tools do not crawl websites properly. In order to build this, BeautifulSoup (a module that does html parsing) was used to gather every "href" tags and put them in the list (except for outside links). Nmap was required to make the script a bit more generic and to make sure we try every port that had http over it. It was used in the beginning of the script has the "discovery" part of the kill chain along with finding URLs to attack.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.3]{images/sqlmap.png}
+    \caption{Some sqlmap output}
+\end{figure}
+
+\subsubsection{The setup}
+
+In order to set this machine up, it was required to have access to the Kali Linux packages because dirb along with sqlmap and nmap are Kali packages. It was then required to add the Kali repository to our sources and to make the public key check in order for apt to be able to download these. One this was done, the packages needed to be downloaded along with PwnXSS which is accessible on Github. Then the script needed to be copied from our host machine to the remote host, with installing all the requirements and setup the whole virtual environment to make sure not to interfere with anything else on the machine.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.6]{images/attack_install.png}
+    \caption{The Ansible playbook running}
+\end{figure}
+
+Unfortunately, Ansible does not have a feature to see the output during the execution of the code, therefore we have to wait until the whole process is done until seeing some output. However since the script is fast so far it is not that much of a problem.
+
+\subsection{Creation of the detection script}
+
+In order to create the detection script, it was required to build a ban list with the IP of the attacker that were spamming. However, building a script like this was far more complicated than expected and the project needed to be ended because most of the time has been consumed doing the setup of the vulnerable machine, this topic was not extended. However, things will be explained in the next part of this paper.
+
+\section{Experiences and test}
+
+Since the lab was ready, it was time to do some testing. The result expected where a list of directory that were found by dirb, information about the database given by sqlmap and also pages that were sensitive to XSS. Along with that, the expected result was also a list of URL that could be queried in order to find vulnerabilities.
+
+\subsection{Dirbuster}
+
+For the dirb tool, the result was a list of file and directories that could be accessed freely by the user. However, the output of dirb is not really suitable because it is really verbose, so it was required to use the "-S" option in order to have less output. Even with this option on, there was still too many information so the output was scrapped in order just to keep the filenames. At first, the requested host was "http://10.0.0.64" only, without specifying the /DVWA folder. In this configuration, the output is not really great. However, if we do specify the folder we can gather a few files and directories.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 1]{images/dirb.png}
+    \caption{The scraped output of dirb}
+\end{figure}
+
+We can still notice that not every folder has been found there, because the way dirb functions is really simple. Dirb has a wordlist with candidate folders or file names, and he just requests the website with these. If he gets a 404 error, the file or folder doesn't exist, if he have something else he add it to the list. The problem with these methods is that it is not discreet at all, but also it cannot find every directory because if the name is not in the wordlist it will not be find. That is why a few lines of Python have been added to gather the href attributes around.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.6]{images/href.png}
+    \caption{Part of the list of collected hrefs}
+\end{figure}
+
+\subsection{SQL}
+
+The SQL injections are the one that did not work out really well. Indeed, sqlmap requires that the user give the injectable parameter in order to find the breach and to dump the table. This specific URL was found and added in the script, but this was not intended like this because the software is now less automated than it should be. Indeed, if the user has to manually enter the good URL, it is not really automated. Even with the crawl parameter set properly, sqlmap cannot fin the injection itself and is also really slow when checking every URL for injection. However, when the id is provided sqlmap is really fast and give every needed information about tables. To keep the script fast only the --dump option is used and not the -a (that would really give each tables in the database) because it is already some interesting dump to see and as a proof of concept. Also notice that the --batch is used; this option allows the tool to work on its own without asking for inputs. Only default values are used. Also, sqlmap is able to crack vulnerable hashes on its own and does it pretty fast. For an unknown reason, sqlmap is overly verbose in the Ansible execution while it is completely quiet when executing the same command outside the playbook. Cracking the passwords looks to be a problem. This behavior was not expected and may be related to the way Ansible deal with terminal command launching
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 1]{images/sqlxss.png}
+    \caption{Sqlmap retrieve a table damaged by XSS injection}
+\end{figure}
+
+\subsection{XSS}
+
+XSS injections were scary at first because the same problem than with the SQL injection could occur. However, the PwnXSS tool is really well made and crawl the website without any problems. Therefore, it was easy to find a way to exploit it to output the vulnerable URLs that could be attacked with XSS. With the crawl parameter set properly, the whole website is traveled and every XSS is found, except the DOM one for an unknown reason (maybe PwnXSS does not cover them). Anyway, once the output is scraped there is a really nice list of vulnerable path with the way of attacking them.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.5]{images/xss.png}
+    \caption{The XSS injections discovered in DVWA}
+\end{figure}
+
+\subsection{The detection script}
+
+The detection script was based on the idea of listening the incoming traffic on the same port as the web server in order to intercept requests. However we cannot do that with Python without making some port redirection or by using another tool like netcat or tcpdump. Even with those tools, it was complicated to code what was required so this project does not cover this part properly. However, the idea was to check the request sent by the outside and to trigger some ban when the URL looked suspicious, with SQL related character or script tag for example. The idea was also to ban IP that were querying the server too fast but I had no idea how to do that and was running short on time.
+
+
+\subsection{The overall result}
+
+The overall result is a victim machine (more than a defensive one since detection is off) configured properly with an attacking script that is able to hit and to gather some information by using regular tools. Discretion is not on, but the script is able to collect directories and files, database dumps and XSS vulnerabilities in a decent timing. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 1]{images/general.png}
+    \caption{The result of the attacking script}
+\end{figure}
+
+\section{Ideas for improvement}
+
+\subsection{Detection}
+
+To improve this project the detection part could be really interesting. The usage of fail2ban could be a nice way to do it without custom scripts, and it may be really fast and easy because the software is still updated to this day and has a good reputation.
+
+\subsection{Other tools}
+
+There are many vulnerabilities that are not covered by the attacking script such as Local File Inclusion, OS code injection, CSRF, File upload and others. There was some attempt to cover Local File Inclusion and OS code injection with tools already available. For LFI (Local File Inclusion), there is a file called LFISuite\cite{LFI} but it requires too many interactions with the user to be used in an automated process as it is right now. An interesting topic would be to modify the code in order to have a batch mode like in sqlmap for example. For OS code injection, a software called commix\cite{OSinjection} is popular. It is supposed to work with DVWA, but it seems that some updates made it unreliable on DVWA because it cannot find the OS injection even when the parameters are specified. If it worked it would have been easy to add it in the attacking script.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.4]{images/commix.png}
+    \caption{The result of the usage of commix in DVWA}
+\end{figure}
+
+Also, to correct the problem in the SQL a parameter miner could be useful in order to be able to gather the potentially injectable parameter directly in the script. However, both tools that were tried during this project were not able to find a single parameter in DVWA even though there are plenty. Both Arjan and ParamSpider have been tried but no interesting result came out.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale = 0.7]{images/param.png}
+    \caption{The result of the usage of ParamSpider in DVWA}
+\end{figure}
+
+Finally, some poweful tools suck as nikto for example could be used to really test the entire website. However, since it seems that these tools are actually the aim of this project, it was not fair to use it there, but for future purpose it could be an interesting idea.
+
+\subsection{General coding}
+
+The main problems remaining with the code (that actually could be fixed easily) would be to add a parameter to the attack script to be able to change the host quickly. A makefile could also be done in order to launch both setups in the same time, that would be faster than the current organization. The Ansible script could take a parameter for certain things as the source folder from which we copy things, but that could be a bit heavy.
+
+
+
+ %Conclusions section
+\sectionWithoutNumber{\keyWordConclusions}{conclu}
+\input{conclusions.tex}
+
+ %file literatureSources.bib
+\referenceSources{literatureSources}
+
+\newpage
+\begin{appendices}
+
+\newpage
+\section{Github link}
+\label{app:a}
+The source code is available at \href{https://github.com/JoannVetter/Attack-defense-automation}{this GitHub link}.
+\end{appendices}
+
+\end{document}
