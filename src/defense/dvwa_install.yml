@@ -85,6 +85,21 @@
       path: /var/www/html/DVWA/hackable/uploads/
       mode: 0777
 
+  - name: Putting good permissions for log poisoning
+    file:
+      path: /var/www/html/DVWA/external/phpids/0.6/lib/IDS/tmp/phpids_log.txt
+      mode: 0777
+
+  - name: Putting good permissions for config
+    file:
+      path: /var/www/html/DVWA/config
+      mode: 0777
+
+  - name: Removing the login requirements
+    copy:
+      src: /home/kali/Attack-defense-automation/src/defense/dvwaPage.inc.php
+      dest: /var/www/html/DVWA/dvwa/includes/dvwaPage.inc.php
+
   - name: Restart apache2
     ansible.builtin.service:
       name: apache2
@@ -94,3 +109,12 @@
     service: name=mysql
              enabled=yes
              state=restarted
+
+  - name: Creating the db of DVWA
+    uri:
+      url: http://10.0.0.64/DVWA/setup.php
+      method: POST
+      body_format: form-urlencoded
+      body:
+      - [create_db,Create+%2F+Reset+Database]
+      status_code: 302

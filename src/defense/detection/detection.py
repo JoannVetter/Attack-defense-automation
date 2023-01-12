@@ -32,11 +32,11 @@ class AttackHandler(http.server.BaseHTTPRequestHandler):
         if "\r\n" in self.requestline:
             return True
 
-        # Block cross-site request forgery attacks
+        # this blocks csrf attacks
         if "csrf_token" not in self.headers:
             return True
 
-        # Block remote file inclusion attacks
+        # block a fewremote file inclusion attacks
         allowed_paths = ['/index.html', '/style.css', '/scripts.js']
         if self.path not in allowed_paths:
             return True
@@ -66,7 +66,8 @@ class AttackHandler(http.server.BaseHTTPRequestHandler):
         self.banned_ips.remove(ip)
 
 def run(server_class=http.server.HTTPServer, handler_class=AttackHandler):
-    server_address = ('', 8000)
+    server_address = ('', 80)
+    #this does not work because the adress is already in use
     httpd = server_class(server_address, handler_class)
     httpd.serve_forever()
 

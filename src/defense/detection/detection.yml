@@ -1,0 +1,11 @@
+---
+- name: Install and launch detection script
+  hosts: all
+  become: true
+  tasks:
+    - name: Copying the script
+      copy:
+        src: /home/kali/Attack-defense-automation/src/defense/detection.py
+        dest: /opt/detection.py
+    - name: Run the script
+      command: python3 /opt/detection.py

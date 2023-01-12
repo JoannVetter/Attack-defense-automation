@@ -11,37 +11,28 @@
       get_url:
         url: http://old.kali.org/kali/pool/main/k/kali-archive-keyring/kali-archive-keyring_2022.1_all.deb
         dest: /tmp/kali-archive-keyring_2022.1_all.deb
-    
+
     - name: Installing the keys
       ansible.builtin.command: dpkg -i /tmp/kali-archive-keyring_2022.1_all.deb
+
+    - name: Getting the XSS tool
+      git:
+        repo: https://github.com/pwn0sec/PwnXSS
+        dest: /opt/attack/PwnXSS
+        clone: yes
+        force: true
+        update: yes
 
     - name: Update package manager cache
       apt:
         update_cache: true
 
-    - name: Install Nikto
+    - name: Install our tools
       apt:
-        name: nikto
-        state: present
-
-    - name: Install sqlmap
-      apt:
-        name: sqlmap
-        state: latest
-
-    - name: Install dirbuster
-      apt:
-        name: dirbuster
-        state: present
-
-    - name: Install nmap
-      apt:
-        name: nmap
-        state: present
-
-    - name: Install xsser
-      apt:
-        name: xsser
+        name: 
+          - sqlmap
+          - dirbuster
+          - nmap
         state: present
 
     - name: Create a directory for the attack script
@@ -79,5 +70,9 @@
         requirements: /opt/attack/requirements.txt
         virtualenv: /opt/attack/venv
         virtualenv_python: python3
-        
-    - command: python3 /opt/attack/attack.py > output
+    - name: Launching the attack script
+      command: sudo python3 /opt/attack/attack.py
+      register: command_output
+
+    - debug:
+        var: command_output.stdout_lines

