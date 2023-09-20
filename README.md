@@ -1,5 +1,5 @@
-Research and implementation of cyber attacks
-Automating attack and defense in a virtual lab
+# Research and implementation of cyber attacks
+## Automating attack and defense in a virtual lab
 
 Author : Joann Vetter
 
